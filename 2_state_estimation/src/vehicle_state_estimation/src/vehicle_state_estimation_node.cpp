@@ -2,6 +2,8 @@
 // Created by ubuntu on 2024-12-31.
 // Tong Qin: qintong@sjtu.edu.cn
 //
+
+// 引入ROS、消息类型、Eigen库、可视化、TF变换和随机数生成等相关头文件
 #include "ros/ros.h"
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
@@ -12,18 +14,19 @@
 #include <tf/transform_broadcaster.h>
 #include <random>
 
+// 定义ROS话题发布器和路径消息变量
 ros::Publisher pub_estimation_path, pub_gt_path, pub_measurement_path, pub_odometry;
 nav_msgs::Path path_estimation, path_gt, path_measurment;
 ros::Publisher meshPub;
 
-// parameters for noise
+// 定义运动和观测噪声的标准差parameters for noise
 double v_std = 0.5;
 double yaw_rate_std = 0.1;
 double x_std = 0.5;
 double y_std = 0.5;
 double yaw_std = 5.0 / 180. * M_PI;
 
-// guassian noise generator
+// 定义高斯分布，用于生成噪声
 std::default_random_engine generator;
 std::normal_distribution<double> dist_x(0, x_std);
 std::normal_distribution<double> dist_y(0, y_std);
@@ -31,10 +34,12 @@ std::normal_distribution<double> dist_yaw(0, yaw_std);
 std::normal_distribution<double> dist_v(0, v_std);
 std::normal_distribution<double> dist_yaw_rate(0, yaw_rate_std);
 
-// matrix for noise
+// 定义运动噪声和观测噪声的协方差矩阵
 Eigen::Matrix2d Qn;
 Eigen::Matrix3d Rn;
 
+
+// 定义状态结构体，包含车辆状态，包括时间、位置、航向角和协方差
 struct State {
     double time;
     double x;
@@ -43,11 +48,12 @@ struct State {
     Eigen::Matrix3d P;
 };
 
+// 发布路径函数
 void PublishPath(const double &time, const double &x, const double &y,
                  const double &yaw,
                  nav_msgs::Path &path,
                  ros::Publisher &path_publisher) {
-    // convert 2D x, y, yaw to 3D x, y, z and rotation matrix
+    // 将二维位置和航向角转换为三维位姿，并发布到ROS路径话题
     Eigen::Vector3d position = Eigen::Vector3d(x, y, 0);
     Eigen::Matrix3d R;
     R << cos(yaw), - sin(yaw), 0,
@@ -78,6 +84,7 @@ void PublishPath(const double &time, const double &x, const double &y,
     path_publisher.publish(path);
 }
 
+// 发布路径和TF变换及Mesh模型
 void PublishPathAndTF(const double &time, const double &x, const double &y,
              const double &yaw,
              nav_msgs::Path &path,
@@ -91,7 +98,7 @@ void PublishPathAndTF(const double &time, const double &x, const double &y,
             0, 0, 1;
     Eigen::Quaterniond q(R);
 
-    // pub tf
+    // 发布路径，并广播TF变换，同时发布车辆Mesh模型用于可视化
     static tf::TransformBroadcaster br;
     tf::Transform transform;
     tf::Quaternion tf_q;
@@ -139,6 +146,7 @@ void PublishPathAndTF(const double &time, const double &x, const double &y,
     meshPub.publish(meshROS);
 }
 
+// 生成轨迹点,根据时间生成车辆的理想轨迹点和航向角
 void GeneratePose(const double &time, double &x, double &y, double &yaw) {
     x = 10 * sin(time / 10 * M_PI);
     y = 10 * cos(time / 10 * M_PI) - 10;
@@ -147,6 +155,7 @@ void GeneratePose(const double &time, double &x, double &y, double &yaw) {
     yaw = atan2(vy , vx);
 }
 
+// 扩展卡尔曼滤波的预测步骤
 void EkfPredict(State& state, const double &time, const double &velocity, const double &yaw_rate) {
     // printf("time %lf, velocity %lf, yaw_rate %lf \n", time, velocity, yaw_rate);
     // YOUR_CODE_HERE
@@ -157,6 +166,7 @@ void EkfPredict(State& state, const double &time, const double &velocity, const 
     // printf("after predict x: %lf, y: %lf, yaw: %lf \n", state.x, state.y, state.yaw);
 }
 
+// EKF更新函数
 void EkfUpdate(State& state,  const double &m_x, const double &m_y, const double &m_yaw) {
     // printf("time :%lf \n", state.time);
     // printf("before update x: %lf, y: %lf, yaw: %lf \n", state.x, state.y, state.yaw);
@@ -168,6 +178,8 @@ void EkfUpdate(State& state,  const double &m_x, const double &m_y, const double
     // printf("after update x: %lf, y: %lf, yaw: %lf \n", state.x, state.y, state.yaw);
 }
 
+
+// 获取运动信号（带噪声）,通过差分计算速度和航向角速度，并加入高斯噪声。
 void GetMotionSignal(const double &time, double &velocity, double &yaw_rate) {
     double x0, y0, yaw0;
     double t1 = time + 1e-6;
@@ -190,6 +202,7 @@ void GetMotionSignal(const double &time, double &velocity, double &yaw_rate) {
 }
 
 
+// 获取观测值（带噪声）, 生成带噪声的观测值
 void GetPoseMeasurement(const double &time, double &mx, double &my, double &myaw) {
     GeneratePose(time, mx, my, myaw);
 
@@ -221,7 +234,12 @@ int main(int argc, char **argv) {
             0, y_std * y_std, 0,
             0, 0, yaw_std * yaw_std;
 
-    // initialize state
+            
+    // 初始化发布器
+    // 初始化路径消息
+    // 初始化噪声协方差矩阵
+
+    // 初始化状态
     State state;
     state.x = 0;
     state.y = 0;
