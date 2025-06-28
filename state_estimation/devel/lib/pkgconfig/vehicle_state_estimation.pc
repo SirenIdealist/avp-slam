@@ -1,0 +1,8 @@
+prefix=/home/ubuntu/avp-slam/state_estimation/devel
+
+Name: vehicle_state_estimation
+Description: Description of vehicle_state_estimation
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
