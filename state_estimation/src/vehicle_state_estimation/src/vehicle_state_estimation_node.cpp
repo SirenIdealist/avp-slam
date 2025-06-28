@@ -133,7 +133,8 @@ void PublishPathAndTF(const double &time, const double &x, const double &y,
     meshROS.color.r = 1.0;
     meshROS.color.g = 0.0;
     meshROS.color.b = 0.0;
-    std::string mesh_resource = "package://vehicle_visualization/meshes/car.dae";
+    std::string mesh_resource = "package://vehicle_state_estimation/meshes/car.dae"; // change this to your own mesh path
+    meshROS.lifetime = ros::Duration(1.0);
     meshROS.mesh_resource = mesh_resource;
     meshPub.publish(meshROS);
 }
