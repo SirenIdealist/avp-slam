@@ -11,3 +11,6 @@
 
 # datasets vis
 **/all_black_vis/
+
+# vscode
+.vscode/
