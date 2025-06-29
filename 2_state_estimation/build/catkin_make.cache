@@ -1,2 +1,0 @@
-vehicle_state_estimation
--DCATKIN_DEVEL_PREFIX=/home/ubuntu/avp-slam/state_estimation/devel -DCMAKE_INSTALL_PREFIX=/home/ubuntu/avp-slam/state_estimation/install -G Unix Makefiles
