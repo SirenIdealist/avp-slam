@@ -8,6 +8,8 @@
 #include <string> // 提供 std::string 类，用于存储相机 ID 或文件路径
 #include <vector> // 提供 std::vector 容器，用于存储多个相机对象或图像数据
 
+
+// MEICamera 主要是用来存储相机参数（内参、外参、畸变等），本质上更像一个“数据结构体”，而不是复杂的面向对象实体。C++ 推荐这种场景用 struct
 struct MEICamera { // 定义 MEICamera 结构体，用于封装相机参数, 表示一个相机，包含内参、外参和畸变参数
   MEICamera(const std::string &intrinsicFile, const std::string &extrinsicFile); // intrinsicFile：包含相机内参和畸变参数的文件路径; extrinsicFile：包含相机外参（相对于车辆坐标系的变换）的文件路径。 构造函数负责从文件中读取参数并初始化相机
   ~MEICamera() = default; // 析构函数, 使用 = default 表示采用编译器默认的析构行为。由于没有动态分配的资源，析构函数无需额外实现。

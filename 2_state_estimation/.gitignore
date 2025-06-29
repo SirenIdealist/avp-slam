@@ -1,0 +1,5 @@
+# ignore makefiles
+/build/
+/devel/
+*.o
+*.so
