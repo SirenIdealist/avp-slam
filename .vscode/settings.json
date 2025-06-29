@@ -2,5 +2,6 @@
     "files.associations": {
         "geometry": "cpp",
         "random": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/home/ubuntu/avp-slam/2_state_estimation/src/vehicle_state_estimation"
 }

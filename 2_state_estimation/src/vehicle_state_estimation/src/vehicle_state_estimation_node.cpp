@@ -157,25 +157,78 @@ void GeneratePose(const double &time, double &x, double &y, double &yaw) {
 
 // 扩展卡尔曼滤波的预测步骤
 void EkfPredict(State& state, const double &time, const double &velocity, const double &yaw_rate) {
-    // printf("time %lf, velocity %lf, yaw_rate %lf \n", time, velocity, yaw_rate);
-    // YOUR_CODE_HERE
-    // todo: implement the EkfPredict function
+    // 步长与主循环一致
+    double dt = 0.01;
 
+    // 当前状态
+    double x = state.x;
+    double y = state.y;
+    double yaw = state.yaw;
 
+    // 1. 状态预测（运动模型）
+    double x_pred = x + velocity * cos(yaw) * dt;
+    double y_pred = y + velocity * sin(yaw) * dt;
+    double yaw_pred = yaw + yaw_rate * dt;
 
-    // printf("after predict x: %lf, y: %lf, yaw: %lf \n", state.x, state.y, state.yaw);
+    // 保证yaw在[-pi, pi]
+    if (yaw_pred > M_PI) yaw_pred -= 2 * M_PI;
+    if (yaw_pred < -M_PI) yaw_pred += 2 * M_PI;
+
+    // 2. 计算雅可比矩阵F（对状态求偏导）
+    Eigen::Matrix3d F = Eigen::Matrix3d::Identity();
+    F(0,2) = -velocity * sin(yaw) * dt;
+    F(1,2) =  velocity * cos(yaw) * dt;
+
+    // 3. 计算控制噪声输入矩阵L
+    Eigen::Matrix<double, 3, 2> L = Eigen::Matrix<double, 3, 2>::Zero();
+    L(0,0) = cos(yaw) * dt;
+    L(1,0) = sin(yaw) * dt;
+    L(2,1) = dt;
+
+    // 4. 协方差预测
+    state.P = F * state.P * F.transpose() + L * Qn * L.transpose();
+
+    // 5. 更新状态
+    state.x = x_pred;
+    state.y = y_pred;
+    state.yaw = yaw_pred;
+    state.time = time;
 }
 
 // EKF更新函数
 void EkfUpdate(State& state,  const double &m_x, const double &m_y, const double &m_yaw) {
-    // printf("time :%lf \n", state.time);
-    // printf("before update x: %lf, y: %lf, yaw: %lf \n", state.x, state.y, state.yaw);
-    // printf("measure x: %lf, y: %lf, yaw: %lf \n", m_x, m_y, m_yaw);
-    // YOUR_CODE_HERE
-    // todo: implement the EkfUpdate function
+    // 观测模型 H
+    Eigen::Matrix3d H = Eigen::Matrix3d::Identity();
 
+    // 观测向量
+    Eigen::Vector3d z;
+    z << m_x, m_y, m_yaw;
 
-    // printf("after update x: %lf, y: %lf, yaw: %lf \n", state.x, state.y, state.yaw);
+    // 预测观测
+    Eigen::Vector3d z_pred;
+    z_pred << state.x, state.y, state.yaw;
+
+    // 观测残差
+    Eigen::Vector3d y = z - z_pred;
+    // 保证yaw误差在[-pi, pi]
+    if (y(2) > M_PI) y(2) -= 2 * M_PI;
+    if (y(2) < -M_PI) y(2) += 2 * M_PI;
+
+    // 卡尔曼增益
+    Eigen::Matrix3d S = H * state.P * H.transpose() + Rn;
+    Eigen::Matrix3d K = state.P * H.transpose() * S.inverse();
+
+    // 状态更新
+    Eigen::Vector3d dx = K * y;
+    state.x += dx(0);
+    state.y += dx(1);
+    state.yaw += dx(2);
+    // 保证yaw在[-pi, pi]
+    if (state.yaw > M_PI) state.yaw -= 2 * M_PI;
+    if (state.yaw < -M_PI) state.yaw += 2 * M_PI;
+
+    // 协方差更新
+    state.P = (Eigen::Matrix3d::Identity() - K * H) * state.P;
 }
 
 
