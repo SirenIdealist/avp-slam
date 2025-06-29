@@ -5,3 +5,9 @@
 *.o
 *.so
 *.log
+
+# ignore datastes
+**/datasets/
+
+# datasets vis
+**/all_black_vis/

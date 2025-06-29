@@ -1,0 +1,4 @@
+训练集为地下泊车场景仿真数据集SUPS，由于数据集较大（约6.39G），为方便大家下载，深蓝提供了多种下载方案：
+（1）百度网盘：链接: https://pan.baidu.com/s/1kBByn_YM9DKZt7KK264VPg 提取码: ckkh
+（2）百度网盘（备用链接）：链接: https://pan.baidu.com/s/1m8-Cd1v6jKJ9go9n-nUF8g  提取码: SHEN
+（3）飞书文档：https://x1mk1drvc81.feishu.cn/file/AwycbDjH9o6xKWxLxi5ccd5ynEd?from=from_copylink
